@@ -3,71 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XAU/USD 5m Analysis</title>
+  <title>XAU/USD Live</title>
   <style>
-    body {
-      background: #0d1117;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    #price {
-      font-size: 2em;
-      margin: 20px 0;
-    }
-    #signal {
-      font-size: 1.5em;
-      margin: 20px 0;
-      font-weight: bold;
-    }
+    body { background:#0d1117; color:white; font-family:Arial, sans-serif; text-align:center; }
+    h1 { margin-top:20px; }
+    #price { font-size:2em; margin:20px 0; }
+    #status { font-size:0.9em; color:gray; }
   </style>
 </head>
 <body>
-  <h1>Live XAU/USD (Gold vs USD)</h1>
+  <h1>Live Gold Price (XAU/USD)</h1>
   <div id="price">Loading...</div>
-  <div id="signal">Calculating...</div>
+  <div id="status">Connecting to Finnhub...</div>
 
   <script>
-    const apiKey = "08996ef143cc48faacf5f7e577ae4b89"; // your key
-    const symbol = "XAUUSD";
+    const apiKey = "d2k4qupr01qj8a5m28vgd2k4qupr01qj8a5m2900"; // your key
+    const url = https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${apiKey};
 
-    async function fetchData() {
+    async function fetchPrice(){
       try {
-        // Get last 20 candlesticks (5m interval)
-        const url = https://api.twelvedata.com/time_series?symbol=${symbol}&interval=5min&apikey=${apiKey}&outputsize=20;
         const res = await fetch(url);
         const data = await res.json();
 
-        if (data.values) {
-          const prices = data.values.map(v => parseFloat(v.close));
-          const latest = prices[0];
-
-          // Simple Moving Averages
-          const sma5 = prices.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
-          const sma10 = prices.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
-
-          // Display price
-          document.getElementById("price").innerText = Current Price: $${latest};
-
-          // Simple buy/sell signal
-          let signal = "Neutral";
-          if (sma5 > sma10) signal = "📈 Buy Signal";
-          else if (sma5 < sma10) signal = "📉 Sell Signal";
-
-          document.getElementById("signal").innerText = signal;
+        if (data.c) {
+          document.getElementById("price").innerText = Price: $${data.c};
+          document.getElementById("status").innerText = "Updated just now ✔";
         } else {
-          document.getElementById("price").innerText = "Error loading data";
+          document.getElementById("price").innerText = "No price data.";
+          document.getElementById("status").innerText = JSON.stringify(data);
         }
-      } catch (err) {
-        console.error(err);
-        document.getElementById("price").innerText = "API Error";
+      } catch(e) {
+        document.getElementById("price").innerText = "Error loading price";
+        document.getElementById("status").innerText = e.message;
       }
     }
 
-    fetchData();
-    setInterval(fetchData, 60000); // refresh every 1 min
+    fetchPrice();
+    setInterval(fetchPrice, 60000); // update every 1 min
   </script>
 </body>
 </html>
-
