@@ -3,29 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XAU/USD 5-Min Technical Analysis</title>
-</head>
-<body style="background-color:#0d1117; color:white; font-family:Arial, sans-serif; text-align:center;">
-
-  <h1>XAU/USD 5-Min Technical Analysis</h1>
-
-  <!-- TradingView Widget BEGIN -->
-  <div class="tradingview-widget-container" style="margin:auto; display:flex; justify-content:center;">
-    <div id="tradingview_technical_analysis"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-    {
-      "interval": "5",
-      "width": "500",
-      "isTransparent": false,
-      "height": "600",
-      "symbol": "OANDA:XAUUSD",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
+  <title>XAU/USD 5m Analysis</title>
+  <style>
+    body {
+      background: #0d1117;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
     }
-    </script>
-  </div>
-  <!-- TradingView Widget END -->
+    #price {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    #signal {
+      font-size: 1.5em;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live XAU/USD (Gold vs USD)</h1>
+  <div id="price">Loading...</div>
+  <div id="signal">Calculating...</div>
 
+  <script>
+    const apiKey = "08996ef143cc48faacf5f7e577ae4b89"; // your key
+    const symbol = "XAU/USD";
+
+    async function fetchData() {
+      try {
+        // Get last 20 candlesticks (5m interval)
+        const url = https://api.twelvedata.com/time_series?symbol=${symbol}&interval=5min&apikey=${apiKey}&outputsize=20;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.values) {
+          const prices = data.values.map(v => parseFloat(v.close));
+          const latest = prices[0];
+
+          // Simple Moving Averages
+          const sma5 = prices.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
+          const sma10 = prices.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
+
+          // Display price
+          document.getElementById("price").innerText = Current Price: $${latest};
+
+          // Simple buy/sell signal
+          let signal = "Neutral";
+          if (sma5 > sma10) signal = "📈 Buy Signal";
+          else if (sma5 < sma10) signal = "📉 Sell Signal";
+
+          document.getElementById("signal").innerText = signal;
+        } else {
+          document.getElementById("price").innerText = "Error loading data";
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("price").innerText = "API Error";
+      }
+    }
+
+    fetchData();
+    setInterval(fetchData, 60000); // refresh every 1 min
+  </script>
 </body>
 </html>
